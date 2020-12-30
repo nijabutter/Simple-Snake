@@ -6,6 +6,9 @@ Press <kbd>q</kbd> to quit and WASD to move
 
 Add `--show-grid` to display the grid
 
+###### Compiling
+`gcc snake.c -std=c99 -lncurses -o snake`
+
 ### Screenshot
 
 ```
