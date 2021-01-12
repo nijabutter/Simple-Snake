@@ -8,7 +8,7 @@ Press <kbd>q</kbd> to quit and WASD to move
 
 ###### Compiling
 
-`gcc snake.c -std=c99 -lncurses -o snake`
+`make` then `./snake` or `make run`
 
 ### Screenshot
 
