@@ -3,18 +3,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
-int main(int argc, char* argv[])
-{	
-	const int WIDTH = 20;
-	const int HEIGHT = 20;
-	const char SNAKE_CHAR = 'O';
-	const char GRID_CHAR = '-';
+#define FRUIT_CHAR ACS_PI
+
+int main()
+{
+	const int FRAME_DELAY = 72000;
+	int WIDTH = 20;
+	int HEIGHT = 20;
+	
+	const char SNAKE_CHAR = '#';
+	const char GRID_CHAR = '.';
+	// const char FRUIT_CHAR = '𝜋';
 
 	srand(time(NULL));
 	initscr();
 	noecho();
 	cbreak();
+  	curs_set(0);
 	timeout(1);
 
 	int snake_X = 10;
@@ -22,23 +29,17 @@ int main(int argc, char* argv[])
 	int tail_Length = 1;
 	int fruit_X = 15;
 	int fruit_Y = 15;
+	
 	int tailX[100], tailY[100];
 	tailX[0] = snake_X-1;
 	tailY[0] = snake_Y;
+	
 	enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
 	enum eDirection direction;
 	direction = STOP;
+	
 	bool running = true;
-
 	bool showGrid = false;
-	if (argc > 1) {
-		for (int i = 1; i < argc; i++) {
-			if (strcmp(argv[i], "--show-grid") == 0) {
-				showGrid = true;
-				break;
-			}
-		}
-	}
 
 	while (running) {
 
@@ -64,6 +65,9 @@ int main(int argc, char* argv[])
 			case 'd':
 				if (direction != LEFT)
 					direction = RIGHT;
+				break;
+			case ' ':
+				showGrid = !showGrid;
 				break;
 			default:
 				break;
@@ -91,7 +95,7 @@ int main(int argc, char* argv[])
 		int prev2X, prev2Y;
 		tailX[0] = snake_X;
 		tailY[0] = snake_Y;
-		for (int i = 1; i< tail_Length; i++) {
+		for (int i = 1; i < tail_Length; i++) {
 			prev2X = tailX[i];
 			prev2Y = tailY[i];
 			tailX[i] = prevX;
@@ -119,43 +123,72 @@ int main(int argc, char* argv[])
 		/*
 		 * Draw
 		 */
-		clear();
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-					if (y == snake_Y && x == snake_X) {
-						addch(SNAKE_CHAR);
+		erase();
+		for (int y = -1; y <= HEIGHT; y++) {
+			for (int x = -1; x <= WIDTH; x++) {
+					if (y == -1) {
+						if (x == -1) {
+							addch(ACS_ULCORNER);
+						}
+						else if (x == WIDTH) {
+							addch(ACS_URCORNER);
+						}
+						else {
+							addch(ACS_HLINE); // need two because of adding space
+							addch(ACS_HLINE);
+						}
 					}
-					else if (y == fruit_Y && x == fruit_X) {
-						addch('#');
+					else if (y == HEIGHT) {
+						if (x == -1) {
+							addch(ACS_LLCORNER);
+						}
+						else if (x == WIDTH) {
+							addch(ACS_LRCORNER);
+						}
+						else {
+							addch(ACS_HLINE);
+							addch(ACS_HLINE);
+						}
+					}
+					else if (x == -1 || x == WIDTH) {
+						addch(ACS_VLINE);
 					}
 					else {
-						bool printed = false;
-						for (int t = 0; t < tail_Length; t++) {
-							if (t != 0 && snake_Y == tailY[t] && snake_X == tailX[t]) {
-								running = false;
+						if (y == snake_Y && x == snake_X) {
+							addch(SNAKE_CHAR);
+						}
+						else if (y == fruit_Y && x == fruit_X) {
+							addch(FRUIT_CHAR);
+						}
+						else {
+							bool printed = false;
+							for (int t = 0; t < tail_Length; t++) {
+								if (t != 0 && snake_Y == tailY[t] && snake_X == tailX[t]) {
+									running = false;
+								}
+								if (tailY[t] == y && tailX[t] == x) {
+									addch(SNAKE_CHAR);
+									printed = true;
+									break;
+								}
 							}
-							if (tailY[t] == y && tailX[t] == x) {
-								addch(SNAKE_CHAR);
-								printed = true;
-								break;
+							if (!printed) {
+								if (showGrid) {
+									addch(GRID_CHAR);
+								}
+								else {
+									addch(' ');
+								}
 							}
 						}
-						if (!printed) {
-							if (showGrid) {
-								addch(GRID_CHAR);
-							}
-							else {
-								addch(' ');
-							}
-						}
+						addch(' '); // to make the horizontal match vertical
 					}
-				addch(' ');
 			}
 			addstr("\n");
 		}
 		printw("Press q to quit. Score: %d\n", tail_Length);
 		refresh();
-		usleep(52000);
+		usleep(FRAME_DELAY);
 	}	
 	endwin();
 	printf("Final score: %d\n", tail_Length);
