@@ -10,14 +10,13 @@
 int main()
 {
 	const int FRAME_DELAY = 72000;
-	int WIDTH = 50;
-	int HEIGHT = 50;
+	int WIDTH = 20;
+	int HEIGHT = 20;
 	int SCREEN_WIDTH;
 	int SCREEN_HEIGHT;
 
 	const char SNAKE_CHAR = '0';
 	const char GRID_CHAR = '.';
-	const char* msg = "Press q to quit";
 
 	srand(time(NULL));
 	initscr();
@@ -234,7 +233,7 @@ int main()
 		for (int p = 0; p < indent_left; p++) {
 			addch(' ');
 		}
-		printw("%s", msg);
+		printw("Press q to quit");
 		refresh();
 		usleep(FRAME_DELAY);
 	}	
