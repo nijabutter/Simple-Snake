@@ -10,11 +10,14 @@
 int main()
 {
 	const int FRAME_DELAY = 72000;
-	int WIDTH = 20;
-	int HEIGHT = 20;
-	
+	int WIDTH = 50;
+	int HEIGHT = 50;
+	int SCREEN_WIDTH;
+	int SCREEN_HEIGHT;
+
 	const char SNAKE_CHAR = '0';
 	const char GRID_CHAR = '.';
+	const char* msg = "Press q to quit";
 
 	srand(time(NULL));
 	initscr();
@@ -22,6 +25,10 @@ int main()
 	cbreak();
   	curs_set(0);
 	timeout(1);
+
+	getmaxyx(stdscr, SCREEN_HEIGHT, SCREEN_WIDTH);
+	int indent_left = (SCREEN_WIDTH / 2) - WIDTH;
+	int indent_top = (SCREEN_HEIGHT - HEIGHT) / 2 -1;
 	/*
 	if (has_colors() == FALSE) {
 		endwin();
@@ -39,10 +46,10 @@ int main()
   	int snake_X = WIDTH/2;
 	int snake_Y= HEIGHT/2;
 	int tail_Length = 3;
-	int fruit_X = 15;
-	int fruit_Y = 15;
+	int fruit_X = rand() % WIDTH;
+	int fruit_Y = rand() % HEIGHT;
 	
-	int tailX[100], tailY[100];
+	int tailX[WIDTH*HEIGHT], tailY[WIDTH*HEIGHT];
   
   // set the position of the rest of the body to be behind the head
 	for (int t = 0; t < tail_Length; t++) { 
@@ -133,9 +140,15 @@ int main()
     }
 		erase();
     	// -1 to WIDTH/HEIGHT to include border
+		for (int p = 0; p < indent_top; p++) {
+			addch('\n');
+		}
 		for (int y = -1; y <= HEIGHT; y++) {
+			for (int p = 0; p < indent_left; p++) {
+					addch(' ');
+			}
 			for (int x = -1; x <= WIDTH; x++) {
-        		//attron(COLOR_PAIR(3));
+				//attron(COLOR_PAIR(3));
 				if (y == -1) {
 					if (x == -1) {
 						addch(ACS_ULCORNER);
@@ -218,7 +231,10 @@ int main()
 			addstr("\n");
 		}
 		// finished drawing
-		printw("Press q to quit. Score: %d\n", tail_Length);
+		for (int p = 0; p < indent_left; p++) {
+			addch(' ');
+		}
+		printw("%s", msg);
 		refresh();
 		usleep(FRAME_DELAY);
 	}	
