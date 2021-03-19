@@ -236,6 +236,10 @@ int main()
 
 		move(indent_top+HEIGHT+2, indent_left);
 		printw("Press q to quit");
+		int x, y;
+		getyx(stdscr, y, x);
+		move(y, indent_left+WIDTH*2-1);
+		printw("%3d", tail_Length);
 		refresh();
 
 		/* usleep(FRAME_DELAY); */
