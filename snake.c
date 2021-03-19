@@ -1,41 +1,34 @@
-#include <unistd.h>
 #include <ncurses.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 #define FRUIT_CHAR ACS_PI
-
-void repeatChar(const int amount, const char character) {
-	for (int i = 0; i < amount; i++) {
-		addch(character);
-	}
-}
+#define SNAKE_CHAR '0'
+#define GRID_CHAR ACS_BULLET
 
 int main()
 {
-	const int FRAME_DELAY = 72000;
-	int WIDTH = 20;
-	int HEIGHT = 20;
-	int SCREEN_WIDTH;
-	int SCREEN_HEIGHT;
+	const int WIDTH = 20;
+	const int HEIGHT = 20;
 
-	const char SNAKE_CHAR = '0';
-	const char GRID_CHAR = '.';
+	// const int FRAME_DELAY = 72000; // microsecond, use usleep
+
+    struct timespec delay;
+    delay.tv_sec = 0;
+    delay.tv_nsec = 72000000L; // nanoseconds
 
 	srand(time(NULL));
 	initscr();
-	noecho();
-	cbreak();
-  	curs_set(0);
-	timeout(1);
-
+	nodelay(stdscr, TRUE);
+    keypad(stdscr, TRUE);
+    curs_set(0);
+	
+	int SCREEN_WIDTH, SCREEN_HEIGHT;
 	getmaxyx(stdscr, SCREEN_HEIGHT, SCREEN_WIDTH);
 
     int indent_left, indent_top;
-	indent_left = (SCREEN_WIDTH / 2) - WIDTH;
-	indent_top = (SCREEN_HEIGHT - HEIGHT) / 2 -1;
+	indent_left = (SCREEN_WIDTH / 2) - WIDTH; // width is technically doubled when printing
+	indent_top = (SCREEN_HEIGHT - HEIGHT) / 2 - 1;
 
 	if (has_colors() == FALSE) {
 		endwin();
@@ -77,18 +70,22 @@ int main()
 			case 'q':
 				running = false;
 				break;
+			case KEY_UP:
 			case 'w':
 				if (direction != DOWN)
 					direction = UP;
 				break;
+			case KEY_LEFT:
 			case 'a':
 				if (direction != RIGHT && direction != STOP)
 					direction = LEFT;
 				break;
+			case KEY_DOWN:
 			case 's':
 				if (direction != UP)
 					direction = DOWN;
 				break;
+			case KEY_RIGHT:
 			case 'd':
 				if (direction != LEFT)
 					direction = RIGHT;
@@ -153,34 +150,22 @@ int main()
 		
 		erase();
         
-        // filler new lines to add the top indent
-		repeatChar(indent_top, '\n');
-		
-        // draw top border
+		move(indent_top ,indent_left);
 
-        // add left padding
-		repeatChar(indent_left, ' ');
-
+		// top border
         addch(ACS_ULCORNER);
-
         for (int i = 0; i < WIDTH; i++) {
+            addch(ACS_HLINE); 
             addch(ACS_HLINE); // need two because of adding spaces after each char
-            addch(ACS_HLINE);
         }
-		
         addch(ACS_URCORNER);
 
-        addch('\n');
 
 		for (int y = 0; y < HEIGHT; y++) {
 
-            // add left padding
-			repeatChar(indent_left, ' ');
-
+			move(indent_top+y+1, indent_left);
             addch(ACS_VLINE); // left border
-
             for (int x = 0; x < WIDTH; x++) {
-				
                 if (y == snake_Y && x == snake_X) {
                     // the snake head
                     switch (direction) {
@@ -202,14 +187,12 @@ int main()
                     }
                 }
                 else if (y == fruit_Y && x == fruit_X) {
-                    // its the fruit
+                    // fruit
                     attron(COLOR_PAIR(2));
                     addch(FRUIT_CHAR);
                     attroff(COLOR_PAIR(2));
                 }
                 else {
-                    // either blank or part of the snake body
-
                     bool printed = false; // to know if we printed a snake body or if it is empty
                     for (int t = 0; t < tail_Length; t++) {
                         // check each part of the snake
@@ -237,26 +220,26 @@ int main()
                         }
                     }
                 }
-                addch(' '); // add space for padding, uniform in speed on x and y 
+                addch(' '); // to stop things looking squished
             }
 			addch(ACS_VLINE);
-			addstr("\n");
 		}
-		repeatChar(indent_left, ' ');
 
+		move(indent_top+HEIGHT+1, indent_left);
+		// bottom border
 		addch(ACS_LLCORNER);
-		
 		for (int i = 0; i < WIDTH; i++) {
 			addch(ACS_HLINE);
 			addch(ACS_HLINE);
 		}
-
 		addch(ACS_LRCORNER);
-		addch('\n');
-		repeatChar(indent_left, ' ');
+
+		move(indent_top+HEIGHT+2, indent_left);
 		printw("Press q to quit");
 		refresh();
-		usleep(FRAME_DELAY);
+
+		/* usleep(FRAME_DELAY); */
+        nanosleep(&delay, NULL);
 	}	
 	endwin();
 	printf("Final score: %d\n", tail_Length);

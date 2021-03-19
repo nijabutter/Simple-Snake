@@ -1,7 +1,7 @@
 default: build
 
 build:
-	gcc -o snake snake.c -std=c99 -lncurses
+	gcc -o snake snake.c -lncurses
 
 run: build
 	./snake
